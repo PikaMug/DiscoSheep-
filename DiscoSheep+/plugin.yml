@@ -1,0 +1,13 @@
+name: DiscoSheepPlus
+version: 1.0
+description: Fluffy mammal parties for Bukkit servers.
+author: HappyPikachu
+website: http://dev.bukkit.org/server-mods/discosheepplus/
+
+main: me.happypikachu.DiscoSheep.DS
+
+commands:
+  ds:
+    aliases: [disco, discoparty, discosheep]
+    description: Displays information about DiscoSheep+.
+    usage: /<command>

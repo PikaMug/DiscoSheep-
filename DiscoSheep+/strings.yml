@@ -1,0 +1,15 @@
+deny-console: This command cannot be used from the console.
+deny-single-party: You lack permission to specify players.
+deny-multiple-party: You lack permission to have multiple parties.
+disabled: Plugin is disabled in this world.
+no-party: There is no party running (nothing to stop).
+no-permission: You do not have permission to perform this command.
+no-players: Could not find any online players to throw a party for.
+no-shearing: No shearing the dancers!
+no-target: You did not specify a target.
+no-vault: Usage through Vault is not enabled on this server.
+party: Party ON!
+permit: You were given permission to use DiscoSheep+ once!
+permit-use: You have consumed your DiscoSheep+ permit.
+reload: Successfully reloaded configs.
+stop: Party stopped, you little joykiller.

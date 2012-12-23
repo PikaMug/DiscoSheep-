@@ -1,0 +1,27 @@
+Creeper:
+  attack: false
+  default-amount: 0
+  drop-items: false
+  invincible: true
+  max-amount: 15
+Economy:
+  enable-vault: false
+  cost-per-use: 500
+Ghast:
+  attack: false
+  default-amount: 0
+  drop-items: false
+  invincible: true
+  max-amount: 5
+Sheep:
+  default-amount: 15
+  drop-items: false
+  invincible: true
+  max-amount: 25
+  shearable: false
+Party:
+  default-distance: 5
+  max-distance: 15
+  default-time: 10
+  max-time: 120
+Worlds:
