@@ -119,18 +119,6 @@ public class DS extends JavaPlugin implements ActionListener {
     }
     
     /**
-     * Restarts thread if it ended unexpectedly.
-     */
-    /*public void recover() {
-    	if(!getServer().getScheduler().isCurrentlyRunning(discoParty.taskId)){
-    		getLogger().info("Thread closed unexpectedly. Attempting recovery.");
-    		discoParty.cleanUp();
-    		discoParty = new DSParty(this);
-    		discoParty.getGoin();
-    	}
-    }*/
-    
-    /**
     * Called when timer wants to stop party.
     */
     @Override
