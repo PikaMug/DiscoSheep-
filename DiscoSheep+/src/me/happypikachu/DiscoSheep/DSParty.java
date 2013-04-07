@@ -17,13 +17,15 @@ import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 /**
- * Discoparty includes a list of all players and their party teams when discoparty was started
- * Also include some setting on how many sheeps to be spawned, beatspeed and block distance for sheeps to spawn
- *
- */
-public class DSParty extends Thread{
+* Discoparty includes a list of all players and their party teams when discoparty was started
+* Also include some setting on how many sheeps to be spawned, beatspeed and block distance for sheeps to spawn
+*
+*/
+public class DSParty {
         private DS plugin;
         protected boolean running;
         protected boolean flagGenerateTeam = false;
@@ -31,6 +33,12 @@ public class DSParty extends Thread{
         protected boolean flagColorEnabled = false;
         protected boolean flagPartyEnabled = false;
         private boolean isCreatingTeam = false;
+        LinkedList<DSTeam> toDelete = new LinkedList<DSTeam>(); //Store teams that needs to be removed
+        BukkitTask task;
+        public DSParty(DS plugin) {
+            this.plugin = plugin;
+            running = false;
+        }
        
         //We will use entity.getEntityId() as our key to store creatures in hash
         protected static HashMap<Integer, Entity> creaturesHash = new HashMap<Integer, Entity>();
@@ -49,86 +57,77 @@ public class DSParty extends Thread{
         private int beatspeed = 475; //Millisec between beats
        
         public static final DyeColor dyeColors[] = {
-                DyeColor.WHITE,
-                DyeColor.ORANGE,
-                DyeColor.MAGENTA,
-                DyeColor.LIGHT_BLUE,
-                DyeColor.YELLOW,
-                DyeColor.LIME,
-                DyeColor.PINK,
-                DyeColor.GRAY,
-                DyeColor.SILVER,
-                DyeColor.CYAN,
-                DyeColor.PURPLE,
-                DyeColor.BLUE,
-                DyeColor.BROWN,
-                DyeColor.GREEN,
-                DyeColor.RED,
-                DyeColor.BLACK
-                };
-       
-        public DSParty(DS plugin) {
-                this.plugin = plugin;
-                running = false;                
-        }
+        	DyeColor.WHITE,
+        	DyeColor.ORANGE,
+        	DyeColor.MAGENTA,
+        	DyeColor.LIGHT_BLUE,
+        	DyeColor.YELLOW,
+        	DyeColor.LIME,
+        	DyeColor.PINK,
+        	DyeColor.GRAY,
+        	DyeColor.SILVER,
+        	DyeColor.CYAN,
+        	DyeColor.PURPLE,
+        	DyeColor.BLUE,
+        	DyeColor.BROWN,
+        	DyeColor.GREEN,
+        	DyeColor.RED,
+        	DyeColor.BLACK
+         };
        
         /**
          * Cleans up all party teams and remove them.
          */
         public void cleanUp() {
-                try {
-                        for(DSTeam team: discoTeams){
-                                team.cleanUp();
-                        }
-                        discoTeams.clear();
+        	try {
+        		for(DSTeam team: discoTeams){
+        			team.cleanUp();
+        		}
+        			discoTeams.clear();
                 } catch (Exception e) {
-                        System.out.println("[DiscoSheepPlus] Failed to clean up all teams. Some blocks and sheeps may still exist.");
+                	plugin.getLogger().severe("Failed to clean up all teams. Some blocks and sheeps may still exist.");
                 }
         }
-       
-        /**
-         * Calls for thread to end
-         */
-        public void end() {
-                running = false;
-        }
+        
         /**
          * Turn on an off all sheeps randomly changing colors
          */
         public void toggleColor(){
-        	plugin.recover();
             flagColorEnabled = !flagColorEnabled;
         }
+        
         /**
          * Returns true if sheeps are changing colors.
          * @return
-         */
+		 */
         public boolean isColorOn(){
-                return flagColorEnabled;
+        	return flagColorEnabled;
         }
+        
         /**
          * Sets flags so thread begins running party
          */
         public void enableParty(Player[] players, int sheeps, int creepers, int ghasts, int spawn){
-               
-                //In case party is already generating
-                for (int i = 0; flagGenerateTeam && i < 4; i++) {
-                        if(i == 3){
-                                System.out.println("[DiscoSheepPlus] has trouble creating new team. Ending thread.");
-                                end();
-                                return;
-                        }
-                        sleepParty(50);
+        	//In case party is already generating
+        	for (int i = 0; flagGenerateTeam && i < 4; i++) {
+        		if(i == 3){
+        			plugin.getLogger().severe("Had trouble creating new team. Ending thread.");
+        			running = false;
+        			return;
+        			}
                 }
-               
-                playersToGetParty = players;
-                sheepsN = sheeps;
-                creepersN = creepers;
-                ghastsN = ghasts;
-                spawnRange = spawn;
-                flagPartyEnabled = true;
-                flagGenerateTeam = true;
+        	playersToGetParty = players;
+        	sheepsN = sheeps;
+        	creepersN = creepers;
+        	ghastsN = ghasts;
+        	spawnRange = spawn;
+        	flagPartyEnabled = true;
+        	flagGenerateTeam = true;
+        	running = true;
+        	cleanUp();
+        	discoTeams.clear();
         }
+        
         /**
          * Sets flag so thread disables party and cleans up
          */
@@ -136,83 +135,66 @@ public class DSParty extends Thread{
                 flagPartyEnabled = false;
                 flagCleanUpTeams = true;
         }
+        
         /**
          * Called when discoparty starts in a new thread
          */
-        public void run() {
-                try {
-                        running = true;
-                        cleanUp();
-                        discoTeams.clear();
-                       
-                        long timedelta = 0;
-                        long timeStart = 0;            
-                        LinkedList<DSTeam> toDelete = new LinkedList<DSTeam>(); //Store teams that needs to be removed
-                       
-                        while(running){
-                               
-                                timeStart = System.currentTimeMillis();
-                               
-                                //Check for flag to generate teams
-                                if(flagGenerateTeam){
-                                        cleanUp();
-                                        isCreatingTeam = true;
-                                        generateTeams();
-                                        isCreatingTeam = false;
-                                        flagGenerateTeam = false;
-                                }
-                               
-                                //Check for plugin.colorEnabled and plugin.partyEnable
-                                if(flagColorEnabled){
-                                        changeColorAllSheeps();
-                                }
-                                else if(flagPartyEnabled){
-                                        changeColorTeamSheeps();
-                                }
-                               
-                                if(flagPartyEnabled){
-                                        for(DSTeam team: discoTeams){
-                                                if(!team.player.isOnline()){
-                                                        System.out.println("[DiscoSheepPlus] Player " + team.player.getName() + " left server during party. Didn't like the music?");
-                                                        team.cleanUp();
-                                                        toDelete.add(team);
-                                                }
-                                        }
-                                        discoTeams.removeAll(toDelete);
-                                        toDelete.clear();
-                                        toggleTorches();
-                                       
-                                        playMusic();
-                                       
-                                        sleepParty(50); //Delay thread so it looks like sheeps jump in beat with the music
-                                        sheepJump();
-
-                                }
-                               
-
-                                //Check for flag to clean up party
-                                if (flagCleanUpTeams) {
-                                        cleanUp();
-                                        flagCleanUpTeams = false;
-                                }
-                               
-                                timedelta = System.currentTimeMillis() - timeStart;
-                                if(timedelta > beatspeed){
-                                        timedelta = beatspeed;
-                                }
-                                sleepParty(beatspeed - timedelta);
-                               
+		public void startParty() {
+        	task = plugin.getServer().getScheduler().runTaskTimer(plugin, new BukkitRunnable() {
+    			@Override
+    			public void run() {
+    				if (running) {
+    					//Check for flag to generate teams
+                        if(flagGenerateTeam){
+                                cleanUp();
+                                isCreatingTeam = true;
+                                generateTeams();
+                                isCreatingTeam = false;
+                                flagGenerateTeam = false;
                         }
                        
+                        //Check for plugin.colorEnabled and plugin.partyEnable
+                        if(flagColorEnabled){
+                                changeColorAllSheeps();
+                        }
+                        else if(flagPartyEnabled){
+                                changeColorTeamSheeps();
+                        }
                        
-                } catch (Exception e) {
-                        System.out.println("[DiscoSheepPlus] DiscoParty has failed. Thread ended.");
-                }
-                running = false;
-                isCreatingTeam = false;
-                cleanUp();
-               
+                        if(flagPartyEnabled){
+                                for(DSTeam team: discoTeams){
+                                        if(!team.player.isOnline()){
+                                                System.out.println("[DiscoSheepPlus] Player " + team.player.getName() + " left server during party. Didn't like the music?");
+                                                team.cleanUp();
+                                                toDelete.add(team);
+                                        }
+                                }
+                                discoTeams.removeAll(toDelete);
+                                toDelete.clear();
+                                toggleTorches();
+                               
+                                playMusic();
+                               
+                                sheepJump();
+
+                        }
+                       
+
+                        //Check for flag to clean up party
+                        if (flagCleanUpTeams) {
+                                cleanUp();
+                                flagCleanUpTeams = false;
+                                
+                                running = false;
+                        }
+    				} else {
+    					task.cancel();
+    				}
+    				
+    			}
+            }, 0L, 10L);
         }
+        
         /**
          * Turn torches in teams on or off depending on last state
          */
@@ -222,7 +204,7 @@ public class DSParty extends Thread{
                                 team.toggleTorches();
                         }
                 } catch (Exception e) {
-                        System.out.println("[DiscoSheepPlus] Error in DiscoParty method toggleTorches. ");
+                        plugin.getLogger().severe("Error in DiscoParty method toggleTorches. ");
                 }
                
         }
@@ -235,12 +217,12 @@ public class DSParty extends Thread{
                                 if(team.soundBlock != null && team.soundBlock.getState() instanceof NoteBlock){
                                         //Play off 3 times at the same time to give some real OMPH in the speaker
                                         for (int i = 0; i < 3; i++) {
-                                                ((NoteBlock)team.soundBlock.getState()).play();                                
+                                                ((NoteBlock)team.soundBlock.getState()).play();
                                         }
                                 }
                         }
                 } catch (Exception e) {
-                        System.out.println("[DiscoSheepPlus] Error in DiscoParty method playMusic.");
+                	plugin.getLogger().severe("Error in DiscoParty method playMusic.");
                 }
 
                
@@ -265,9 +247,9 @@ public class DSParty extends Thread{
                         for(Sheep sheep: team.sheepList){
                                 if(sheep != null){
                                         try {
-                                                sheepJump(sheep);                                              
+                                                sheepJump(sheep);
                                         } catch (Exception e) {
-                                                System.out.println("[DiscoSheepPlus] A sheep could not rock on. Dead sheep?");
+                                        	plugin.getLogger().warning("A sheep could not rock on. Dead sheep?");
                                         }
                                 }
                         }
@@ -281,13 +263,13 @@ public class DSParty extends Thread{
         private void generateTeams() {
                
                 if(playersToGetParty == null || playersToGetParty.length == 0){
-                        System.out.println("[DiscoSheepPlus] generateTeams() don't have any players to give party");
-                        return;
+                	plugin.getLogger().info("Don't have any players to give party");
+                	return;
                 }
                
                 DSTeam team;
                
-                for(Player player: playersToGetParty){                  
+                for(Player player: playersToGetParty){
                         team = new DSTeam(player);
                        
                         //Add musicBox and stone
@@ -319,7 +301,7 @@ public class DSParty extends Thread{
                         Block spawnLoc = findSpawnYLoc(spawnPlane).getRelative(0, 8, 0);
                         
                         if(spawnLoc != null){
-                        	team.addGhast((Ghast) spawnLoc.getWorld().spawnEntity(spawnLoc.getLocation(), EntityType.GHAST));
+                         team.addGhast((Ghast) spawnLoc.getWorld().spawnEntity(spawnLoc.getLocation(), EntityType.GHAST));
                         }
                 }
         }
@@ -340,7 +322,7 @@ public class DSParty extends Thread{
                         Block spawnPlane = team.getPlayer().getLocation().getBlock().getRelative(x, 0, z);
                         Block spawnLoc = findSpawnYLoc(spawnPlane);
                         if(spawnLoc != null){
-                                team.addCreeper((Creeper) spawnLoc.getWorld().spawnEntity(spawnLoc.getLocation(), EntityType.CREEPER));                            
+                                team.addCreeper((Creeper) spawnLoc.getWorld().spawnEntity(spawnLoc.getLocation(), EntityType.CREEPER));
                         }
                 }
                
@@ -362,7 +344,7 @@ public class DSParty extends Thread{
                         Block spawnPlane = team.getPlayer().getLocation().getBlock().getRelative(x, 0, z);
                         Block spawnLoc = findSpawnYLoc(spawnPlane);
                         if(spawnLoc != null){
-                                team.addSheep((Sheep) spawnLoc.getWorld().spawnEntity(spawnLoc.getLocation(), EntityType.SHEEP));                          
+                                team.addSheep((Sheep) spawnLoc.getWorld().spawnEntity(spawnLoc.getLocation(), EntityType.SHEEP));
                         }
                 }
         }
@@ -390,8 +372,8 @@ public class DSParty extends Thread{
         /**
          * Check if a 3*2*3 space is free so we can have a music box there.
          * @param loc
-         * @return
-         */
+	* @return
+	*/
         private boolean isMiniChunkFree(Block loc) {
                
                 for (int x = 0; x < 3; x++) {
@@ -435,7 +417,7 @@ public class DSParty extends Thread{
                         Random r = new Random();
                         entity.setColor(dyeColors[r.nextInt(dyeColors.length)]);
                 } catch (Exception e) {
-                        System.out.println("Error: A sheep could not change colour (DiscoSheep");
+                	plugin.getLogger().warning("Error: A sheep could not change colour");
                 }
 
         }
@@ -496,15 +478,6 @@ public class DSParty extends Thread{
                
 
         }
-        private void sleepParty(long millisec) {
-                try {
-                        sleep(millisec);
-                } catch (InterruptedException e) {
-                        running = false;
-                        System.out.println("DiscoSheep Failed sleeping thread, Discosheep has ended");
-                        e.printStackTrace();
-                }
-        }
        
         public String printDebug(){
                 String ln = "\n";
@@ -514,13 +487,13 @@ public class DSParty extends Thread{
                 s.append("flagCleanUpTeams: " + flagCleanUpTeams + ln);
                 s.append("flagColorEnabled: " + flagColorEnabled + ln);
                 s.append("flagPartyEnabled: " + flagPartyEnabled + ln);
-                s.append("isCreatingTeams : " + isCreatingTeam   + ln);
-                s.append("discoPartyAlive : " + this.isAlive()   + ln);
-                s.append("Beatspeed       : " + beatspeed        + ln);
+                s.append("isCreatingTeams : " + isCreatingTeam + ln);
+                s.append("discoPartyAlive : " + plugin.getServer().getScheduler().isCurrentlyRunning(task.getTaskId()) + ln);
+                s.append("Beatspeed : " + beatspeed + ln);
                 s.append("number of teams : " + discoTeams.size()+ ln);
                 s.append("sheeps in teams : " + numberOfSheeps() + ln);
-                s.append("tempSheepSize   : " + sheepsN       + ln);
-                s.append("tempSpawnSize   : " + spawnRange       + ln);
+                s.append("tempSheepSize : " + sheepsN + ln);
+                s.append("tempSpawnSize : " + spawnRange + ln);
                 return s.toString();
         }
         /**
@@ -555,8 +528,8 @@ public class DSParty extends Thread{
         /**
          * See if block is in one of our discoteams
          * @param block
-         * @return
-         */
+	     * @return
+	     */
         public boolean isOurEntity(Block block) {
                
                 //Find block in O(1) time

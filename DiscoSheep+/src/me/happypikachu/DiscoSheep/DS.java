@@ -26,13 +26,14 @@ public class DS extends JavaPlugin implements ActionListener {
     private FileConfiguration customConfig = null;
     private File customConfigFile = null;
 	private DSCommandExecutor cmdExecutor = new DSCommandExecutor(this);
-	protected DSParty discoParty;
+	protected DSParty discoParty = new DSParty(this);
 	protected Timer timer;
 	public Set<Player> permit = new HashSet<Player>();
 	public Economy econ = null;
 	
 	@Override
 	public void onEnable() {
+		//Copy config.yml and update header
         saveDefaultConfig();
         getConfig().options().header("DiscoSheep+ v" + getDescription().getVersion() + " Configuration" + 
 				"\nby HappyPikachu -aka- FlyingPikachu" +
@@ -49,36 +50,30 @@ public class DS extends JavaPlugin implements ActionListener {
         getConfig().options().copyDefaults(true);
         saveConfig();
         
+        //Copy string.yml
         saveDefaultCustomConfig();
         
     	getCommand("ds").setExecutor(cmdExecutor);
         getServer().getPluginManager().registerEvents(new DSBlockListener(this), this);
         getServer().getPluginManager().registerEvents(new DSEntityListener(this), this);
         getServer().getPluginManager().registerEvents(new DSPlayerListener(this), this);
-            
-        discoParty = new DSParty(this);
-        discoParty.start();
+        
         timer = new Timer(getConfig().getInt("Party.default-time"), this);
         timer.stop();
-            
+        
         if (setupEconomy() & getConfig().getBoolean("Economy.enable-vault")) {
             getLogger().info("Using Vault for economy is enabled.");
         } else if (setupEconomy()) {
             getLogger().info("Using Vault for economy is disabled.");
         }
     }
-        
+    
     @Override
     public void onDisable() {
-    	stopParty();
-        discoParty.end();
-        try {
-        	discoParty.join(2000);
-        } catch (InterruptedException ex) {
-        	getLogger().log(Level.SEVERE, "Failed to end thread. Did not close down properly.", ex);
-        	}
-        }
-      
+    	endParty();
+        getServer().getScheduler().cancelTasks(this);
+    }
+    
     /**
      * Checks for and registers Vault as economy service provider.
      */
@@ -95,27 +90,30 @@ public class DS extends JavaPlugin implements ActionListener {
     }
     
     /**
+     * 
      * Distinguishes unit conversion errors.
      */
     public void errParseInt(CommandSender sender, String string, int def) {
     	sender.sendMessage(ChatColor.RED + "An error occurred: Could not convert " + string + " to a number. Using default " + def);
     }
-       
+    
     /**
      * Spawns objects and starts party.
      */
-    public void startParty(Player[] players, int partyTime, int sheeps, int creepers, int ghasts, int spawnRange){
-    	timer.stop();
-    	recover();
-    	timer.setInitialDelay(partyTime * 1000);
-    	timer.start();
+	
+	public void startParty(Player[] players, int partyTime, int sheeps, int creepers, int ghasts, int spawnRange){
+		timer.stop();
+		//recover();
+		timer.setInitialDelay(partyTime * 1000);
+	    timer.start();
     	discoParty.enableParty(players, sheeps, creepers, ghasts, spawnRange);
+    	discoParty.startParty();
     }
     
     /**
      * Ends party.
      */
-    void stopParty() {
+    void endParty() {
     	timer.stop();
     	discoParty.stopParty();
     }
@@ -123,21 +121,21 @@ public class DS extends JavaPlugin implements ActionListener {
     /**
      * Restarts thread if it ended unexpectedly.
      */
-    public void recover(){
-    	if(!discoParty.isAlive()){
+    /*public void recover() {
+    	if(!getServer().getScheduler().isCurrentlyRunning(discoParty.taskId)){
     		getLogger().info("Thread closed unexpectedly. Attempting recovery.");
     		discoParty.cleanUp();
     		discoParty = new DSParty(this);
-    		discoParty.start();
+    		discoParty.getGoin();
     	}
-    }
-       
+    }*/
+    
     /**
-     * Called when timer wants to stop party.
-     */
+    * Called when timer wants to stop party.
+    */
     @Override
     public void actionPerformed(ActionEvent arg0) {
-    	stopParty();
+    	endParty();
     }
     
     /**

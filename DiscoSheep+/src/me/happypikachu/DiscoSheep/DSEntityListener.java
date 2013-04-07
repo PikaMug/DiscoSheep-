@@ -11,15 +11,12 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 
-/**
- * If we own entity and they are not allowed to drop items then damage is disabled.
- */
 public class DSEntityListener implements Listener {
         private DS plugin;
         public DSEntityListener(DS plugin) {
                 this.plugin = plugin;
         }
-       
+        
         @EventHandler
         public void onEntityDamage(EntityDamageEvent event) {
         	if (event.getEntity() instanceof Creeper & plugin.getConfig().getBoolean("Creeper.invincible")) {

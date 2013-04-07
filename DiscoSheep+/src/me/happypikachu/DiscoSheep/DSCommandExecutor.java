@@ -20,7 +20,7 @@ public class DSCommandExecutor implements CommandExecutor {
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		if (cmd.getName().equalsIgnoreCase("ds") || cmd.getName().equalsIgnoreCase("discoparty") || cmd.getName().equalsIgnoreCase("discosheep")) {
+		if (cmd.getName().equalsIgnoreCase("ds") || cmd.getName().equalsIgnoreCase("disco") || cmd.getName().equalsIgnoreCase("discoparty") || cmd.getName().equalsIgnoreCase("discosheep")) {
             if (args.length == 0) {
             	PluginDescriptionFile pdFile = plugin.getDescription();	
             	sender.sendMessage(ChatColor.RED + "DiscoSheep+ v" + pdFile.getVersion() + ChatColor.GRAY + " " + pdFile.getAuthors().toString());
@@ -31,7 +31,7 @@ public class DSCommandExecutor implements CommandExecutor {
             
             if (args.length > 0) {
             	if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("info")) {
-                    if(sender.hasPermission("discosheep.help") || plugin.permit.contains((Player)sender)) {	
+                    if (sender.hasPermission("discosheep.help") || plugin.permit.contains((Player)sender)) {	
                         sender.sendMessage(ChatColor.RED + "DiscoSheep+ Commands:");
                         sender.sendMessage(ChatColor.GRAY + "(Green indicates access to that command.)");
                         sender.sendMessage((sender.hasPermission("discosheep.buy") || sender.hasPermission("discosheep.pay") ? ChatColor.GREEN:"") + "/ds buy: " + ChatColor.GRAY + "Purchase a single use.");
@@ -48,7 +48,7 @@ public class DSCommandExecutor implements CommandExecutor {
                 }
             	if (args[0].equalsIgnoreCase("color") || args[0].equalsIgnoreCase("rainbow")) {
                     if(sender.hasPermission("discosheep.color")) {
-                    	plugin.recover();
+                    	//plugin.recover();
                         plugin.discoParty.toggleColor();
                     	sender.sendMessage("Rainbow sheep toggled" + (plugin.discoParty.isColorOn() ? "on.":"off."));
                     } else {
@@ -63,7 +63,7 @@ public class DSCommandExecutor implements CommandExecutor {
                 		} else {
                 			sender.sendMessage(plugin.getCustomConfig().getString("no-party"));                                            
                 		}
-                		plugin.stopParty();
+                		plugin.endParty();
                 	} else {
                 		sender.sendMessage(ChatColor.RED + plugin.getCustomConfig().getString("no-permission"));
                 	}
@@ -325,7 +325,7 @@ public class DSCommandExecutor implements CommandExecutor {
                             partyAt[i] = p;
                             i++;
                     }
-                   
+                    
                     plugin.startParty(partyAt, timeN, sheepsN, creepersN, ghastsN, spawnDistance);
                    
                     sender.sendMessage(ChatColor.YELLOW + plugin.getCustomConfig().getString("party"));

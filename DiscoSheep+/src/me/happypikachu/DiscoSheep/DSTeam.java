@@ -31,6 +31,7 @@ public class DSTeam {
                 light = false;
                 torches = new Block[4];
         }
+        
         public void buildMusicArea(Block loc){
                 if(loc == null){
                         return;
@@ -63,6 +64,7 @@ public class DSTeam {
                 }
                
         }
+        
         /**
          * Return player connected to this team
          * @return
@@ -70,6 +72,7 @@ public class DSTeam {
         public Player getPlayer() {
                 return player;
         }
+        
         /**
          * Removes all sheeps, boxes and torches in this team.
          */
@@ -77,24 +80,7 @@ public class DSTeam {
                 cleanUpEntitys();
                 cleanUpBoxes();
         }
-        /**
-         * Turn torches on or off
-         */
-        public void toggleTorches(){
-                light = !light;
-                for(Block torch: torches){
-                        if(torch != null && (torch.getType() == Material.AIR || torch.getType() == Material.TORCH)){
-                                if(light){
-                                        if(stoneBlock.getType() == Material.STONE){
-                                                torch.setType(Material.TORCH);
-                                        }
-                                }
-                                else{
-                                        torch.setType(Material.AIR);    
-                                }
-                        }
-                }
-        }
+        
         private void cleanUpEntitys(){
                 for(Sheep sheep: sheepList){
                         if(sheep != null){
@@ -120,6 +106,7 @@ public class DSTeam {
                 }
                 ghastList.clear();
         }
+        
         private void cleanUpBoxes(){
                 for (Block torch : torches) {
                         if(torch != null){
@@ -137,6 +124,24 @@ public class DSTeam {
                 }
         }
         /**
+         * Turn torches on or off
+         */
+        public void toggleTorches(){
+                light = !light;
+                for(Block torch: torches){
+                        if(torch != null && (torch.getType() == Material.AIR || torch.getType() == Material.TORCH)){
+                                if(light){
+                                        if(stoneBlock.getType() == Material.STONE){
+                                                torch.setType(Material.TORCH);
+                                        }
+                                }
+                                else{
+                                        torch.setType(Material.AIR);    
+                                }
+                        }
+                }
+        }
+        /**
          * Add sheep to the sheeplist for this team
          * @param sheep
          */
@@ -145,7 +150,7 @@ public class DSTeam {
                         sheepList.add(sheep);
                         DSParty.creaturesHash.put(sheep.getEntityId(), (Entity) sheep);              
                 }else{
-                        System.out.println("[DiscoSheepPlus] addSheep in DiscoTeam received a creeper that was null. Sheep not added");
+                        System.out.println("[DiscoSheepPlus] addSheep in DiscoTeam received a sheep that was null. Sheep not added");
                 }
         }
         /**
