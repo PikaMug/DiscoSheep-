@@ -17,7 +17,6 @@ import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 /**
@@ -140,7 +139,7 @@ public class DSParty {
          * Called when discoparty starts in a new thread
          */
 		public void startParty() {
-        	task = plugin.getServer().getScheduler().runTaskTimer(plugin, new BukkitRunnable() {
+        	task = plugin.getServer().getScheduler().runTaskTimer(plugin, new Runnable() {
     			@Override
     			public void run() {
     				if (running) {

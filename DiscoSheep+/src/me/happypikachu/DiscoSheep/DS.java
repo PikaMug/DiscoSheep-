@@ -129,7 +129,8 @@ public class DS extends JavaPlugin implements ActionListener {
     /**
      * Loads strings.yml config.
      */
-    public void reloadCustomConfig() {
+    @SuppressWarnings("deprecation")
+	public void reloadCustomConfig() {
         if (customConfigFile == null) {
         customConfigFile = new File(getDataFolder(), "strings.yml");
         }

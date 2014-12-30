@@ -3,6 +3,8 @@ package me.happypikachu.DiscoSheep;
 import java.util.LinkedList;
 
 import org.bukkit.Material;
+import org.bukkit.Note;
+import org.bukkit.Note.Tone;
 import org.bukkit.block.Block;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.entity.Creeper;
@@ -39,7 +41,8 @@ public class DSTeam {
                 soundBlock = loc.getRelative(1, 1, 1);
                 soundBlock.setType(Material.NOTE_BLOCK);
                 if(soundBlock.getState() instanceof NoteBlock){
-                        ((NoteBlock)soundBlock.getState()).setRawNote((byte) 0x11);
+                	((NoteBlock)soundBlock.getState()).setNote(Note.sharp(1, Tone.G));
+                    //Deprecated - ((NoteBlock)soundBlock.getState()).setRawNote((byte) 0x11);
                 }
                
                 stoneBlock = loc.getRelative(1, 0, 1);
@@ -74,7 +77,7 @@ public class DSTeam {
         }
         
         /**
-         * Removes all sheeps, boxes and torches in this team.
+         * Removes all sheep, boxes and torches in this team.
          */
         public void cleanUp(){
                 cleanUpEntitys();
@@ -155,26 +158,26 @@ public class DSTeam {
         }
         /**
          * Add creeper to the creeperlist for this team
-         * @param sheep
+         * @param creeper
          */
         public void addCreeper(Creeper creeper) {
                 if(creeper != null){
                         creeperList.add(creeper);
                         DSParty.creaturesHash.put(creeper.getEntityId(), (Entity) creeper);
                 }else{
-                        System.out.println("[DiscoSheepPlus] addCreeper in DiscoTeam recived a creeper that was null. Creeper not added");
+                        System.out.println("[DiscoSheepPlus] addCreeper in DiscoTeam received a creeper that was null. Creeper not added");
                 }
         }
         /**
          * Add ghast to the ghastlist for this team
-         * @param sheep
+         * @param ghast
          */
         public void addGhast(Ghast ghast) {
                 if(ghast != null){
                         ghastList.add(ghast);
                         DSParty.creaturesHash.put(ghast.getEntityId(), (Entity) ghast);      
                 }else{
-                        System.out.println("[DiscoSheepPlus] addGhast in DiscoTeam recived a ghast that was null. Ghast not added");
+                        System.out.println("[DiscoSheepPlus] addGhast in DiscoTeam received a ghast that was null. Ghast not added");
                 }
 
         }
