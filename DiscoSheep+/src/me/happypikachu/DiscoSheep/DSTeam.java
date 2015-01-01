@@ -12,6 +12,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
+import org.bukkit.material.Torch;
 
 /**
  * Contains the entities for each party that belongs to a player.
@@ -46,12 +47,18 @@ public class DSTeam {
                 }
                
                 stoneBlock = loc.getRelative(1, 0, 1);
-                stoneBlock.setType(Material.STONE);    
-               
-                torches[0] = loc.getRelative(1, 0, 0);
+                stoneBlock.setType(Material.STONE);
+                
+                torches[0] = stoneBlock.getRelative(1, 0, 0);
+                torches[1] = stoneBlock.getRelative(0, 0, 1);
+                torches[2] = stoneBlock.getRelative(-1, 0, 0);
+                torches[3] = stoneBlock.getRelative(0, 0, -1);
+                
+                
+                /*torches[0] = loc.getRelative(1, 0, 0);
                 torches[1] = loc.getRelative(0, 0, 1);
                 torches[2] = loc.getRelative(1, 0, 2);
-                torches[3] = loc.getRelative(2, 0, 1);
+                torches[3] = loc.getRelative(2, 0, 1);*/
                
                 //turn torches on
                 toggleTorches();
@@ -129,13 +136,16 @@ public class DSTeam {
         /**
          * Turn torches on or off
          */
-        public void toggleTorches(){
+        @SuppressWarnings("deprecation")
+		public void toggleTorches(){
                 light = !light;
                 for(Block torch: torches){
                         if(torch != null && (torch.getType() == Material.AIR || torch.getType() == Material.TORCH)){
                                 if(light){
-                                        if(stoneBlock.getType() == Material.STONE){
-                                                torch.setType(Material.TORCH);
+                                        if(stoneBlock.getType() == Material.STONE){	
+                                        		Torch t = new Torch();
+                                        		t.setFacingDirection(stoneBlock.getFace(torch));
+                                        		torch.setTypeIdAndData(50, t.getData(), false);
                                         }
                                 }
                                 else{
